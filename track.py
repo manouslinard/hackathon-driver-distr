@@ -108,6 +108,8 @@ class DistrModule():
                         if send_notify and len(keypoints):
                             send_notify = False
                         eye = cv2.drawKeypoints(eye, keypoints, eye, (0, 0, 255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+            else:
+                self.last_sight = time.time()
             if send_notify:
                 print("ALERT: DRIVER ASLEEP")
             print(time.time() - self.last_sight)
