@@ -55,11 +55,11 @@ class DistrModule():
         # print(left_eye)
         # print(right_eye)
 
-        if left_eye is not None and right_eye is not None:  # both eyes are open
-            self.last_sight = time.time()   # initializes last time that both eyes are open.
-        elif time.time() - self.last_sight >= self.blink_time:
-            print(f"Time passed since last sight: {time.time() - self.last_sight}")
-            return None, None
+        # if left_eye is not None and right_eye is not None:  # both eyes are open
+        #     self.last_sight = time.time()   # initializes last time that both eyes are open.
+        # elif time.time() - self.last_sight >= self.blink_time:
+        #     print(f"Time passed since last sight: {time.time() - self.last_sight}")
+        #     return None, None
 
         # returns None, None if both eyes are closed.
         return left_eye, right_eye
@@ -94,25 +94,24 @@ class DistrModule():
         cv2.namedWindow('image')
         cv2.createTrackbar('threshold', 'image', 0, 255, DistrModule.nothing)
         while True:
-            eye_detected = False
             _, frame = cap.read()
             face_frame = self.detect_faces(frame, self.face_cascade)
             if face_frame is not None:
                 eyes = self.detect_eyes(face_frame, self.eye_cascade)
+                if all(v is not None for v in eyes):
+                    self.last_sight = time.time()   # initializes last time that both eyes are open.
+                elif (diff := time.time() - self.last_sight) >= self.blink_time:
+                    # print(f"Time passed since both eyes opened: {diff}")
+                    if diff >= self.time_offs:
+                        print("ALERT: DRIVER ASLEEP")
                 for eye in eyes:
                     if eye is not None:
-                        eye_detected = True
                         self.start_time = -1
                         threshold = r = cv2.getTrackbarPos('threshold', 'image')
                         eye = self.cut_eyebrows(eye)
                         keypoints = self.blob_process(eye, threshold, self.detector)
                         eye = cv2.drawKeypoints(eye, keypoints, eye, (0, 0, 255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
             # print(eye_detected)
-            if not eye_detected:
-                if self.start_time <= 0:
-                    self.start_time = time.time()
-                elif time.time() - self.start_time >= self.time_offs:
-                    print("ALERT: DRIVER ASLEEP")
             cv2.imshow('image', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
