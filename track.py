@@ -1,13 +1,19 @@
 import cv2
 import numpy as np
 import time
+import os
+
+
+
 
 class DistrModule():
 
     def __init__(self) -> None:
+        self.threshold = int(os.getenv("THRESHOLD","69"))
         self.time_offs = 5
         self.blink_time = 0.2
         self.last_sight = time.time()
+        self.start_time = -1
         self.face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
         self.eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
         detector_params = cv2.SimpleBlobDetector_Params()
@@ -81,45 +87,48 @@ class DistrModule():
     def nothing(x):
         pass
 
+    def detect_sleep(self, keypoints, open_eyes, once_sight):
+        if(len(keypoints) < 1):
+            if open_eyes:
+                open_eyes = False
+                self.start_time = time.time()
+            if self.start_time >= 0 and time.time() - self.start_time >= self.time_offs:
+                print("Driver Asleep")
+            #print(f"Seconds Passed: {time.time() - self.start_time}")
+        else:
+            if not open_eyes:
+                if once_sight:
+                    self.last_sight = time.time()
+                    once_sight = False
+                elif time.time() - self.last_sight >= self.blink_time:
+                    open_eyes = True
+                    once_sight = True
+        return open_eyes, once_sight
 
     def main(self):
+        open_eyes = True
+        once_sight = True
         cap = cv2.VideoCapture(0)
         cv2.namedWindow('image')
         cv2.createTrackbar('threshold', 'image', 0, 255, DistrModule.nothing)
         while True:
-            send_notify = False
             _, frame = cap.read()
             face_frame = self.detect_faces(frame, self.face_cascade)
-            # print(eye_detected)
-            if (diff := time.time() - self.last_sight) >= self.blink_time:
-                # print(f"Time passed since both eyes opened: {diff}")
-                if diff >= self.time_offs:
-                    send_notify = True
-                    # print("ALERT: DRIVER ASLEEP")
             if face_frame is not None:
                 eyes = self.detect_eyes(face_frame, self.eye_cascade)
-                if all(v is not None for v in eyes):
-                    self.last_sight = time.time()   # initializes last time that both eyes are open.
                 for eye in eyes:
                     if eye is not None:
-                        threshold = r = cv2.getTrackbarPos('threshold', 'image')
                         eye = self.cut_eyebrows(eye)
-                        keypoints = self.blob_process(eye, threshold, self.detector)
-                        if send_notify and len(keypoints):
-                            send_notify = False
+                        keypoints = self.blob_process(eye, self.threshold, self.detector)
+                        open_eyes, once_sight = self.detect_sleep(keypoints, open_eyes, once_sight)
                         eye = cv2.drawKeypoints(eye, keypoints, eye, (0, 0, 255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
             else:
-                self.last_sight = time.time()
-            if send_notify:
-                print("ALERT: DRIVER ASLEEP")
-            print(time.time() - self.last_sight)
-            # print(eye_detected)
+                self.start_time = time.time()
             cv2.imshow('image', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         cap.release()
         cv2.destroyAllWindows()
-
 
 if __name__ == "__main__":
     m = DistrModule()
