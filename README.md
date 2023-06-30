@@ -23,3 +23,6 @@ To run the app, run:
 ```
 python3 track.py
 ```
+---
+## Other urls:
+* [App Presentation](https://docs.google.com/presentation/d/1jPr3KqO-BXX-nrm5JFsRkXSC2Sjtxgkyj1UYmDA4A-E/edit?usp=sharing)
