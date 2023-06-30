@@ -94,8 +94,8 @@ class DistrModule():
                 open_eyes = False
                 self.start_time = time.time()
             if self.start_time >= 0 and time.time() - self.start_time >= self.time_offs:
-                print("Driver Asleep")
-            #print(f"Seconds Passed: {time.time() - self.start_time}")
+                print("ALERT: Driver Asleep!")
+            print(f"Driver Asleep for: {time.time() - self.start_time}")
         else:
             if not open_eyes:
                 if once_sight:
@@ -130,12 +130,9 @@ class DistrModule():
                                 if self.distract_time < 0:
                                     self.distract_time = time.time()
                                 elif time.time() - self.distract_time >= self.time_offs:
-                                    print("dRIVER DISTRACTED")
-                                print(time.time() - self.distract_time)
-                            # elif relative_position > 0.55:
-                                # print("Looking right")
+                                    print("ALERT: Driver Distracted!")
+                                print(f"Driver Distracted for: {time.time() - self.distract_time}")
                             else:
-                                # print("Looking straight")
                                 self.distract_time = -1
                         open_eyes, once_sight = self.detect_sleep(keypoints, open_eyes, once_sight)
                         eye = cv2.drawKeypoints(eye, keypoints, eye, (0, 0, 255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
