@@ -9,7 +9,7 @@ import os
 class DistrModule():
 
     def __init__(self) -> None:
-        self.threshold = int(os.getenv("THRESHOLD","69"))
+        self.threshold = int(os.getenv("THRESHOLD","78"))
         self.time_offs = 5
         self.blink_time = 0.2
         self.last_sight = time.time()
