@@ -9,7 +9,7 @@ import os
 class DistrModule():
 
     def __init__(self) -> None:
-        self.threshold = int(os.getenv("THRESHOLD","78"))
+        self.threshold = int(os.getenv("THRESHOLD","80"))
         self.time_offs = 5
         self.blink_time = 0.2
         self.last_sight = time.time()
@@ -95,7 +95,9 @@ class DistrModule():
                 self.start_time = time.time()
             if self.start_time >= 0 and time.time() - self.start_time >= self.time_offs:
                 print("ALERT: Driver Asleep!")
-            print(f"Driver Asleep for: {time.time() - self.start_time}")
+            diff = time.time() - self.start_time 
+            if (diff > 1.2):
+                print(f"Driver Asleep for: {diff}")
         else:
             if not open_eyes:
                 if once_sight:
@@ -131,7 +133,11 @@ class DistrModule():
                                     self.distract_time = time.time()
                                 elif time.time() - self.distract_time >= self.time_offs:
                                     print("ALERT: Driver Distracted!")
-                                print(f"Driver Distracted for: {time.time() - self.distract_time}")
+                                diff_distr = time.time() - self.distract_time
+                                if diff_distr < 0.1:
+                                    print(f"Driver Concetrated.")
+                                else:
+                                    print(f"Driver Distracted for: {time.time() - self.distract_time}")
                             else:
                                 self.distract_time = -1
                         open_eyes, once_sight = self.detect_sleep(keypoints, open_eyes, once_sight)
