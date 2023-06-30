@@ -9,11 +9,12 @@ import os
 class DistrModule():
 
     def __init__(self) -> None:
-        self.threshold = int(os.getenv("THRESHOLD","69"))
+        self.threshold = int(os.getenv("THRESHOLD","78"))
         self.time_offs = 5
         self.blink_time = 0.2
         self.last_sight = time.time()
         self.start_time = -1
+        self.distract_time = -1
         self.face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
         self.eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
         detector_params = cv2.SimpleBlobDetector_Params()
@@ -120,6 +121,22 @@ class DistrModule():
                     if eye is not None:
                         eye = self.cut_eyebrows(eye)
                         keypoints = self.blob_process(eye, self.threshold, self.detector)
+                        if len(keypoints) > 0:
+                            eye_center_x = keypoints[0].pt[0]
+                            eye_width = eye.shape[1]
+                            relative_position = eye_center_x / eye_width
+
+                            if relative_position < 0.45 or relative_position > 0.55:
+                                if self.distract_time < 0:
+                                    self.distract_time = time.time()
+                                elif time.time() - self.distract_time >= self.time_offs:
+                                    print("dRIVER DISTRACTED")
+                                print(time.time() - self.distract_time)
+                            # elif relative_position > 0.55:
+                                # print("Looking right")
+                            else:
+                                # print("Looking straight")
+                                self.distract_time = -1
                         open_eyes, once_sight = self.detect_sleep(keypoints, open_eyes, once_sight)
                         eye = cv2.drawKeypoints(eye, keypoints, eye, (0, 0, 255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
             else:
