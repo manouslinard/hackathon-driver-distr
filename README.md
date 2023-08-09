@@ -1,3 +1,4 @@
+**This repository was submitted to TEACHING_H2020 hackathon.** See relevant linkedin post [here](https://www.linkedin.com/posts/manouslinard_innovation-team-work-activity-7080646510018707456-4_b1?utm_source=share&utm_medium=member_desktop).
 
 ## Python Venv:
 You should initialize the python venv in the same folder as requirements.txt (initial repo folder).<br>To create a python venv, run:
